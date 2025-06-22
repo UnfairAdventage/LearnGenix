@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { apiService, User as ApiUser } from '../services/api';
 
 interface User {
   id: string;
@@ -10,6 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role: 'student' | 'teacher') => Promise<void>;
   logout: () => void;
@@ -25,51 +27,69 @@ export const useAuth = () => {
   return context;
 };
 
+// Función para convertir ApiUser a User
+const convertApiUserToUser = (apiUser: ApiUser): User => ({
+  id: apiUser.id.toString(),
+  name: apiUser.name,
+  email: apiUser.email,
+  role: apiUser.role as 'student' | 'teacher'
+});
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('learngenix_user');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Verificar si hay un token al cargar la aplicación
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        if (apiService.isAuthenticated()) {
+          const apiUser = await apiService.getCurrentUser();
+          setUser(convertApiUserToUser(apiUser));
+        }
+      } catch (error) {
+        console.error('Error al verificar autenticación:', error);
+        // Si hay error, limpiar token inválido
+        apiService.removeToken();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock user data
-    const mockUser: User = {
-      id: '1',
-      name: email === 'teacher@test.com' ? 'Prof. García' : 'Ana Estudiante',
-      email,
-      role: email === 'teacher@test.com' ? 'teacher' : 'student'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('learngenix_user', JSON.stringify(mockUser));
+    try {
+      const response = await apiService.login({ username: email, password });
+      apiService.setToken(response.access_token);
+      setUser(convertApiUserToUser(response.user));
+    } catch (error) {
+      console.error('Error en login:', error);
+      throw error;
+    }
   };
 
   const register = async (name: string, email: string, password: string, role: 'student' | 'teacher') => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const newUser: User = {
-      id: Date.now().toString(),
-      name,
-      email,
-      role
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('learngenix_user', JSON.stringify(newUser));
+    try {
+      const response = await apiService.register({ name, email, password, role });
+      apiService.setToken(response.access_token);
+      setUser(convertApiUserToUser(response.user));
+    } catch (error) {
+      console.error('Error en registro:', error);
+      throw error;
+    }
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('learngenix_user');
+    apiService.removeToken();
   };
 
   const value = {
     user,
     isAuthenticated: !!user,
+    isLoading,
     login,
     register,
     logout

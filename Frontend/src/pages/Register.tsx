@@ -33,8 +33,8 @@ const Register: React.FC = () => {
     try {
       await register(name, email, password, role);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Error al crear la cuenta');
+    } catch (err: any) {
+      setError(err.message || 'Error al crear la cuenta');
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +79,7 @@ const Register: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="Tu nombre completo"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -97,6 +98,7 @@ const Register: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="tu@email.com"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -109,11 +111,12 @@ const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setRole('student')}
+                  disabled={isLoading}
                   className={`flex items-center justify-center space-x-2 p-3 rounded-xl border-2 transition-all duration-300 ${
                     role === 'student'
                       ? 'border-secondary bg-secondary/10 text-secondary shadow-cyan-neon'
                       : 'border-border bg-base-light text-text-secondary hover:bg-border'
-                  }`}
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <Users className="h-5 w-5" />
                   <span className="font-medium">Estudiante</span>
@@ -121,11 +124,12 @@ const Register: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setRole('teacher')}
+                  disabled={isLoading}
                   className={`flex items-center justify-center space-x-2 p-3 rounded-xl border-2 transition-all duration-300 ${
                     role === 'teacher'
                       ? 'border-green-neon bg-green-neon/10 text-green-neon shadow-green-neon'
                       : 'border-border bg-base-light text-text-secondary hover:bg-border'
-                  }`}
+                  } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <GraduationCap className="h-5 w-5" />
                   <span className="font-medium">Profesor</span>
@@ -147,6 +151,7 @@ const Register: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="Mínimo 6 caracteres"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -165,6 +170,7 @@ const Register: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="Repite tu contraseña"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>

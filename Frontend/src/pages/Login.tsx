@@ -19,8 +19,8 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
-      setError('Credenciales inválidas');
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
@@ -65,6 +65,7 @@ const Login: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="tu@email.com"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -83,6 +84,7 @@ const Login: React.FC = () => {
                   className="w-full pl-10 pr-4 py-3 bg-base-light border border-border rounded-xl focus:ring-2 focus:ring-primary-neon focus:border-primary-neon transition-all duration-300 text-text-primary placeholder-text-secondary"
                   placeholder="Tu contraseña"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
