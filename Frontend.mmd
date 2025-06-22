@@ -1,0 +1,35 @@
+flowchart TD
+    A([Inicio])
+    B[Login / Registro]
+    C[Dashboard]
+    D[Seleccionar área de estudio]
+    E[Solicitar ejercicio personalizado]
+    F[Recibir ejercicio]
+    G[Enviar respuesta]
+    H[Recibir feedback automático]
+    I[Ver progreso / historial]
+    J[Ver ranking y recompensas]
+    K[Solicitar ayuda feedback profesor]
+    L[Admin: Crear / Editar ejercicios]
+    M[Admin: Revisar respuestas de alumnos]
+    N([Fin sesión])
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> J
+    J --> C
+
+    H --> K
+    K --> H
+
+    C --> L
+    L --> M
+    M --> C
+
+    C --> N

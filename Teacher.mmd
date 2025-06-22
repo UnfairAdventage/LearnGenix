@@ -1,0 +1,20 @@
+flowchart TD
+    InicioP([Inicio])
+    LoginP[Profesor inicia sesión/registro]
+    CreaEjercicio[Elige crear o editar ejercicio]
+    Sugerencia_IA? -->|Sí| SolicitaIA[Sugiere ejercicio IA]
+    SolicitaIA --> ServicioIA_P[Servicio IA genera sugerencia]
+    ServicioIA_P --> MuestraPreview[Preview al profesor]
+    CreaEjercicio -->|No| IngresaManual[Ingresa datos manualmente]
+    MuestraPreview --> EditaEjercicio[Edita o aprueba ejercicio]
+    IngresaManual --> EditaEjercicio
+    EditaEjercicio --> GuardaEjercicio[Guarda ejercicio en BD]
+    ListaEjercicios[Lista/gestiona sus ejercicios]
+    GuardaEjercicio --> ListaEjercicios
+    ListaEjercicios --> RevisaRespuestas[Revisa respuestas de alumnos]
+    RevisaRespuestas --> DaFeedback[Da feedback o califica]
+    DaFeedback --> FinP([Fin])
+
+    InicioP --> LoginP
+    LoginP --> CreaEjercicio
+    CreaEjercicio --> Sugerencia_IA?

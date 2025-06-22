@@ -1,0 +1,29 @@
+flowchart TD
+    InicioA([Inicio])
+    LoginA[Alumno inicia sesión/registro]
+    SolicitaEjercicio[Solicita ejercicio personalizado]
+    APIEjercicio[Llama API de ejercicios]
+    ServicioIA[Llama Servicio IA]
+    ModeloIA[Genera ejercicio IA]
+    RecibeEjercicio[Alumno recibe ejercicio]
+    RespondeEjercicio[Alumno responde ejercicio]
+    EvaluaRespuesta[API evalúa respuesta]
+    Feedback[Recibe feedback y resultados]
+    ActualizaProgreso[Actualiza progreso en BD]
+    ConsultaProgreso[Consulta su avance]
+    FinA([Fin])
+
+    InicioA --> LoginA
+    LoginA --> SolicitaEjercicio
+    SolicitaEjercicio --> APIEjercicio
+    APIEjercicio --> ServicioIA
+    ServicioIA --> ModeloIA
+    ModeloIA --> ServicioIA
+    ServicioIA --> APIEjercicio
+    APIEjercicio --> RecibeEjercicio
+    RecibeEjercicio --> RespondeEjercicio
+    RespondeEjercicio --> EvaluaRespuesta
+    EvaluaRespuesta --> Feedback
+    Feedback --> ActualizaProgreso
+    ActualizaProgreso --> ConsultaProgreso
+    ConsultaProgreso --> FinA
