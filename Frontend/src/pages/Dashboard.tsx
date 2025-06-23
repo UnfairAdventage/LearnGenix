@@ -206,28 +206,25 @@ const Dashboard: React.FC = () => {
               </div>
               {/* Progreso por materia */}
               <div className="space-y-4">
-                {Object.entries(progressBySubject).map(([subject, data]: any, idx) => (
-                  <div key={subject}>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-text-primary">{data.name || subject}</span>
-                      <span className={idx === 0 ? 'text-green-neon font-medium' : idx === 1 ? 'text-secondary font-medium' : 'text-pink-neon font-medium'}>
-                        {data.completed}/{data.total} ({data.percent}%)
-                      </span>
+                {Object.entries(progressBySubject).map(([subject, data]: [string, any], idx) => {
+                  const percentValue = Number(data.percent) || 0;
+                  return (
+                    <div key={subject}>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-text-primary">{data.name || subject}</span>
+                        <span className={idx === 0 ? 'text-green-neon font-medium' : idx === 1 ? 'text-secondary font-medium' : 'text-pink-neon font-medium'}>
+                          {data.completed}/{data.total} ({percentValue}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-border rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${subject.gradient || 'from-primary to-primary-neon'}`}
+                          style={{ width: `${percentValue}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-border rounded-full h-2">
-                      <div
-                        className={
-                          idx === 0
-                            ? 'bg-gradient-to-r from-primary to-primary-neon'
-                            : idx === 1
-                            ? 'bg-gradient-to-r from-secondary to-green-neon'
-                            : 'bg-gradient-to-r from-pink-neon to-primary-neon'
-                        }
-                        style={{ width: `${data.percent}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

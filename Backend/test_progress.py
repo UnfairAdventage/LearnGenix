@@ -1,10 +1,9 @@
 from app.crud.user_progress import create_user_progress
 from app.schemas.user_progress import UserProgressCreate
-from uuid import uuid4
 
 def test_create_user_progress():
-    user_id = str(uuid4())
-    exercise_id = str(uuid4())
+    user_id = "362f7331-107c-4f1c-8606-03f4d19e4dee"
+    exercise_id = "130aca86-2552-48d7-adf6-bc023971d4f9"
     progress = UserProgressCreate(
         user_id=user_id,
         exercise_id=exercise_id,

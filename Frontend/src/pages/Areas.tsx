@@ -1,25 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { Calculator, Beaker, Atom, Globe, Palette, BookOpen, Music, Laptop } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { apiService } from '../services/api';
-
-const iconMap: Record<string, React.ElementType> = {
-  mathematics: Calculator,
-  physics: Atom,
-  chemistry: Beaker,
-  geography: Globe,
-  language: BookOpen,
-  arts: Palette,
-  music: Music,
-  computer: Laptop,
-};
 
 type Subject = {
   id: string;
   name: string;
   description?: string;
   color?: string;
+  gradient?: string;
+  icon?: string;
 };
 
 type ProgressSubject = {
@@ -73,11 +64,16 @@ const Areas: React.FC = () => {
           ) : subjects.length === 0 ? (
             <div className="col-span-full text-center text-text-secondary">No hay materias disponibles.</div>
           ) : subjects.map((subject) => {
-            const Icon = iconMap[subject.name?.toLowerCase()] || BookOpen;
+            const Icon = LucideIcons[subject.icon as keyof typeof LucideIcons];
             const progress = progressBySubject[subject.id];
             const percent = progress && typeof progress.percent === 'number' ? progress.percent : 0;
+            const percentValue = Number(percent) || 0;
             const completed = progress && typeof progress.completed === 'number' ? progress.completed : 0;
             const total = progress && typeof progress.total === 'number' ? progress.total : 0;
+            const gradient = subject.gradient || subject.color || 'from-primary to-primary-neon';
+            function isLucideComponent(component: unknown): component is React.ComponentType<{ className?: string }> {
+              return typeof component === 'function' && (component.prototype?.isReactComponent || String(component).includes('return React.createElement'));
+            }
             return (
               <Link
                 key={subject.id}
@@ -86,8 +82,12 @@ const Areas: React.FC = () => {
               >
                 {/* Icon and progress */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`w-12 h-12 bg-gradient-to-r ${subject.color || 'from-primary to-primary-neon'} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="h-6 w-6 text-white" />
+                  <div className={`w-12 h-12 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                    {isLucideComponent(Icon) ? (
+                      <Icon className="h-6 w-6 text-white" />
+                    ) : (
+                      <LucideIcons.BookOpen className="h-6 w-6 text-white" />
+                    )}
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-text-primary">{String(percent)}%</div>
@@ -107,8 +107,8 @@ const Areas: React.FC = () => {
                 <div className="mb-4">
                   <div className="w-full bg-border rounded-full h-2">
                     <div 
-                      className={`bg-gradient-to-r ${subject.color || 'from-primary to-primary-neon'} h-2 rounded-full transition-all duration-300`}
-                      style={{ width: `${percent}%` }}
+                      className={`bg-gradient-to-r ${gradient} h-2 rounded-full transition-all duration-300`}
+                      style={{ width: `${percentValue}%` }}
                     ></div>
                   </div>
                 </div>

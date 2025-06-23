@@ -11,7 +11,11 @@ TABLE_NAME = 'user_stats'
 def create_user_stats(stats: UserStatsCreate) -> Optional[UserStats]:
     try:
         supabase = get_supabase()
-        data = stats.dict()
+        data = stats.model_dump()
+        # Convertir UUIDs a string
+        for k, v in data.items():
+            if isinstance(v, UUID):
+                data[k] = str(v)
         response = supabase.table(TABLE_NAME).insert(data).execute()
         if response.data and len(response.data) > 0:
             return UserStats(**response.data[0])

@@ -11,7 +11,11 @@ TABLE_NAME = 'user_progress'
 def create_user_progress(progress: UserProgressCreate) -> Optional[UserProgress]:
     try:
         supabase = get_supabase()
-        data = progress.dict()
+        data = progress.model_dump()
+        # Convertir UUIDs a string
+        for k, v in data.items():
+            if isinstance(v, UUID):
+                data[k] = str(v)
         response = supabase.table(TABLE_NAME).insert(data).execute()
         if response.data and len(response.data) > 0:
             return UserProgress(**response.data[0])
