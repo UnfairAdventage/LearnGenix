@@ -7,7 +7,9 @@ import { apiService } from '../services/api';
 interface ExerciseData {
   id: string;
   subject: string;
-  question: string;
+  title: string;
+  description: string | null;
+  content: string;
   type: 'multiple-choice' | 'text' | 'math';
   options?: string[];
   correctAnswer: string;
@@ -27,11 +29,13 @@ const Exercise: React.FC = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const subject = searchParams.get('subject');
-  const difficulty = 'medium'; // Puedes ajustar esto según la UI
+  const difficulty = ''; // Así no filtra por dificultad y el backend puede devolver cualquiera
 
   // Cargar ejercicio inicial desde backend
   useEffect(() => {
-    fetchNextExercise();
+    if (subject) {
+      fetchNextExercise();
+    }
     // eslint-disable-next-line
   }, [subject]);
 
@@ -54,7 +58,9 @@ const Exercise: React.FC = () => {
       setCurrentExercise({
         id: result.id,
         subject: result.subject_id || '',
-        question: result.title || result.content || '',
+        title: result.title || 'Ejercicio',
+        description: result.description || null,
+        content: result.content || '',
         type: result.type === 'multiple_choice' ? 'multiple-choice' : 'text',
         options: result.options ? Object.values(result.options) : undefined,
         correctAnswer: result.correct_answer || '',
@@ -110,6 +116,26 @@ const Exercise: React.FC = () => {
     return subjects[subjectId] || 'Ejercicio';
   };
 
+  if (!subject) {
+    return (
+      <div>
+        <Navbar />
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center">
+            <XCircle className="h-12 w-12 text-pink-neon mx-auto mb-4" />
+            <p className="text-lg text-text-secondary">Por favor, selecciona un área o materia antes de continuar.</p>
+            <button
+              onClick={() => navigate('/areas')}
+              className="mt-6 px-6 py-2 rounded-lg bg-primary-neon text-white font-semibold shadow-neon-sm hover:bg-secondary transition-colors"
+            >
+              Elegir área
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentExercise) {
     return (
       <div>
@@ -159,8 +185,14 @@ const Exercise: React.FC = () => {
         <div className="bg-surface rounded-2xl border border-border p-8 mb-6 shadow-xl">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-text-primary mb-6">
-              {currentExercise.question}
+              {currentExercise.title}
             </h2>
+            {currentExercise.description && (
+              <p className="text-text-secondary mb-4">{currentExercise.description}</p>
+            )}
+            <p className="text-lg text-text-primary mb-6">
+              {currentExercise.content}
+            </p>
 
             {/* Answer input */}
             {currentExercise.type === 'multiple-choice' && currentExercise.options ? (

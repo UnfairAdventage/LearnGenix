@@ -1,30 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Navbar from '../components/Navbar';
 import { TrendingUp, BookOpen, Trophy, Clock, ArrowRight, Target, Zap, Users } from 'lucide-react';
+import { apiService } from '../services/api';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const [summary, setSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    { icon: Trophy, label: 'Ejercicios completados', value: '47', color: 'text-green-neon', bgColor: 'bg-green-neon/10' },
-    { icon: Target, label: 'Racha actual', value: '7 días', color: 'text-secondary', bgColor: 'bg-secondary/10' },
-    { icon: Clock, label: 'Tiempo promedio', value: '3.2 min', color: 'text-primary-neon', bgColor: 'bg-primary-neon/10' },
-    { icon: TrendingUp, label: 'Progreso semanal', value: '+15%', color: 'text-pink-neon', bgColor: 'bg-pink-neon/10' },
-  ];
+  useEffect(() => {
+    const fetchSummary = async () => {
+      setLoading(true);
+      try {
+        const data = await apiService.getDashboardSummary();
+        setSummary(data);
+      } catch (e) {
+        setSummary(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSummary();
+  }, []);
 
+  // Stats cards
+  const stats = summary ? [
+    { icon: Trophy, label: 'Ejercicios completados', value: summary.stats?.completed_exercises ?? 0, color: 'text-green-neon', bgColor: 'bg-green-neon/10' },
+    { icon: Target, label: 'Racha actual', value: summary.stats?.current_streak ? `${summary.stats.current_streak} días` : '0 días', color: 'text-secondary', bgColor: 'bg-secondary/10' },
+    { icon: Clock, label: 'Tiempo promedio', value: summary.stats?.total_time ? `${(summary.stats.total_time / Math.max(summary.stats.completed_exercises || 1, 1)).toFixed(1)} min` : '0 min', color: 'text-primary-neon', bgColor: 'bg-primary-neon/10' },
+    { icon: TrendingUp, label: 'Progreso semanal', value: '+0%', color: 'text-pink-neon', bgColor: 'bg-pink-neon/10' },
+  ] : [];
+
+  // Quick actions (sin cambios)
   const quickActions = [
     { icon: Zap, label: 'Ejercicio rápido', description: 'Resuelve un ejercicio aleatorio', to: '/exercise', gradient: 'from-primary to-primary-neon' },
     { icon: BookOpen, label: 'Explorar áreas', description: 'Ve todas las materias disponibles', to: '/areas', gradient: 'from-secondary to-green-neon' },
     { icon: TrendingUp, label: 'Ver progreso', description: 'Revisa tu rendimiento', to: '/progress', gradient: 'from-pink-neon to-primary-neon' },
   ];
 
-  const recentActivities = [
-    { subject: 'Matemáticas', exercise: 'Ecuaciones lineales', score: 95, time: '2 min', color: 'text-green-neon' },
-    { subject: 'Física', exercise: 'Movimiento uniforme', score: 88, time: '4 min', color: 'text-secondary' },
-    { subject: 'Química', exercise: 'Tabla periódica', score: 92, time: '3 min', color: 'text-primary-neon' },
-  ];
+  // Actividad reciente
+  const recentActivities = summary?.recent_activity?.map((a: any) => ({
+    subject: a.subject_id || '',
+    exercise: a.exercise_title || '',
+    score: a.score ?? 0,
+    time: a.time_spent ? `${a.time_spent} seg` : '',
+    color: a.is_correct ? 'text-green-neon' : 'text-pink-neon',
+  })) || [];
+
+  // Progreso general
+  const progressGeneral = summary?.progress?.general ?? 0;
+  // Progreso por materia (mock si no hay datos)
+  const progressBySubject = summary?.progress?.by_subject || {
+    Matemáticas: 85,
+    Física: 70,
+    Química: 60,
+  };
+
+  // Logros recientes
+  const achievements = summary?.achievements || [];
+
+  if (loading) {
+    return (
+      <div>
+        <Navbar />
+        <div className="max-w-6xl mx-auto px-4 py-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-neon mx-auto"></div>
+          <p className="mt-4 text-text-secondary">Cargando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -33,10 +80,10 @@ const Dashboard: React.FC = () => {
         {/* Welcome section */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-text-primary mb-2">
-            ¡Hola, <span className="bg-gradient-to-r from-primary-neon to-secondary bg-clip-text text-transparent">{user?.name}</span>! 👋
+            ¡Hola, <span className="bg-gradient-to-r from-primary-neon to-secondary bg-clip-text text-transparent">{summary?.user?.name || user?.name}</span>! 👋
           </h1>
           <p className="text-text-secondary text-lg">
-            {user?.role === 'teacher' 
+            {summary?.user?.role === 'teacher' 
               ? 'Revisa el progreso de tus estudiantes y crea nuevos ejercicios'
               : 'Continúa tu aprendizaje donde lo dejaste'
             }
@@ -140,7 +187,7 @@ const Dashboard: React.FC = () => {
                       strokeWidth="8"
                       fill="none"
                       strokeDasharray={`${2 * Math.PI * 56}`}
-                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - 0.72)}`}
+                      strokeDashoffset={`${2 * Math.PI * 56 * (1 - progressGeneral / 100)}`}
                       strokeLinecap="round"
                     />
                     <defs>
@@ -151,41 +198,31 @@ const Dashboard: React.FC = () => {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-text-primary">72%</span>
+                    <span className="text-3xl font-bold text-text-primary">{progressGeneral}%</span>
                   </div>
                 </div>
                 <h3 className="font-semibold text-text-primary">Progreso general</h3>
                 <p className="text-sm text-text-secondary">¡Vas muy bien!</p>
               </div>
-              
+              {/* Progreso por materia */}
               <div className="space-y-4">
-                <div>
+                {Object.entries(progressBySubject).map(([subject, percent]: any, idx) => (
+                  <div key={subject}>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-text-primary">Matemáticas</span>
-                    <span className="text-green-neon font-medium">85%</span>
+                      <span className="text-text-primary">{subject}</span>
+                      <span className={idx === 0 ? 'text-green-neon font-medium' : idx === 1 ? 'text-secondary font-medium' : 'text-pink-neon font-medium'}>{percent}%</span>
                   </div>
                   <div className="w-full bg-border rounded-full h-2">
-                    <div className="bg-gradient-to-r from-primary to-primary-neon h-2 rounded-full" style={{ width: '85%' }}></div>
-                  </div>
+                      <div className={
+                        idx === 0
+                          ? 'bg-gradient-to-r from-primary to-primary-neon'
+                          : idx === 1
+                          ? 'bg-gradient-to-r from-secondary to-green-neon'
+                          : 'bg-gradient-to-r from-pink-neon to-primary-neon'
+                      } style={{ width: `${percent}%` }}></div>
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-text-primary">Física</span>
-                    <span className="text-secondary font-medium">70%</span>
                   </div>
-                  <div className="w-full bg-border rounded-full h-2">
-                    <div className="bg-gradient-to-r from-secondary to-green-neon h-2 rounded-full" style={{ width: '70%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-text-primary">Química</span>
-                    <span className="text-pink-neon font-medium">60%</span>
-                  </div>
-                  <div className="w-full bg-border rounded-full h-2">
-                    <div className="bg-gradient-to-r from-pink-neon to-primary-neon h-2 rounded-full" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
@@ -193,24 +230,20 @@ const Dashboard: React.FC = () => {
             <div className="bg-surface rounded-2xl border border-border p-6">
               <h3 className="font-semibold text-text-primary mb-4">Logros recientes</h3>
               <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 rounded-xl bg-green-neon/10 border border-green-neon/30">
+                {achievements.length === 0 && (
+                  <p className="text-text-secondary text-sm">Aún no tienes logros recientes.</p>
+                )}
+                {achievements.map((a: any, idx: number) => (
+                  <div key={idx} className="flex items-center space-x-3 p-3 rounded-xl bg-green-neon/10 border border-green-neon/30">
                   <div className="w-10 h-10 bg-green-neon/20 rounded-lg flex items-center justify-center">
                     <Trophy className="h-5 w-5 text-green-neon" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-text-primary">Racha de 7 días</p>
-                    <p className="text-xs text-text-secondary">¡Sigue así!</p>
-                  </div>
+                      <p className="text-sm font-medium text-text-primary">{a.name}</p>
+                      <p className="text-xs text-text-secondary">{a.description}</p>
                 </div>
-                <div className="flex items-center space-x-3 p-3 rounded-xl bg-secondary/10 border border-secondary/30">
-                  <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center">
-                    <Target className="h-5 w-5 text-secondary" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">50 ejercicios</p>
-                    <p className="text-xs text-text-secondary">¡Medio centenar!</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>

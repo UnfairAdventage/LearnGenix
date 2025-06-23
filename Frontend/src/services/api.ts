@@ -136,6 +136,12 @@ class ApiService {
       body: JSON.stringify({ subject_id, difficulty }),
     });
   }
+
+  async getDashboardSummary() {
+    return this.request<any>('/dashboard/summary', {
+      method: 'GET',
+    });
+  }
 }
 
 export const apiService = new ApiService(); 

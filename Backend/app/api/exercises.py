@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Body
-from typing import List
+from typing import List, Optional, Union
 from uuid import UUID
 from app.schemas.exercise import Exercise, ExerciseCreate, ExerciseUpdate
 from app.crud.exercise import (
@@ -55,16 +55,27 @@ def delete_exercise_endpoint(
 
 @router.post("/next", response_model=Exercise)
 def get_next_exercise(
-    subject_id: UUID = Body(...),
+    subject_id: Union[str, UUID, None] = Body(None),
     difficulty: str = Body('medium'),
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Devuelve un ejercicio personalizado para el alumno (stub inicial, sin IA real).
     """
+    # Normaliza subject_id: si es string vacío o no es UUID válido, lo trata como None
+    if isinstance(subject_id, str):
+        try:
+            subject_id = UUID(subject_id) if subject_id else None
+        except Exception:
+            subject_id = None
     # Aquí se podría integrar IA. Por ahora, selecciona un ejercicio aleatorio del subject y dificultad.
-    ejercicios = get_exercises()
-    filtrados = [e for e in ejercicios if (not subject_id or e.subject_id == subject_id) and (not difficulty or e.difficulty == difficulty)]
-    if not filtrados:
+    ejercicios = get_exercises(subject_id=subject_id)
+    
+    # Filtrar adicionalmente por dificultad si se especifica
+    if difficulty:
+        ejercicios = [e for e in ejercicios if e.difficulty == difficulty]
+
+    if not ejercicios:
         raise HTTPException(status_code=404, detail="No hay ejercicios disponibles para los criterios dados")
-    return random.choice(filtrados) 
+    
+    return random.choice(ejercicios) 

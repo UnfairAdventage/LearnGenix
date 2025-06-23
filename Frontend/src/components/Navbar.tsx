@@ -30,8 +30,8 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/dashboard" className="flex items-center space-x-2 group">
-            <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-primary-neon group-hover:shadow-neon transition-all duration-300">
-              <BookOpen className="h-6 w-6 text-white" />
+            <div className="p-2 rounded-xl ">
+              <img src="https://arqvajznbhlkczchpzov.supabase.co/storage/v1/object/public/primary//image%20(1).webp" alt="LearnGenix" className="h-10 w-10" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-primary-neon to-secondary bg-clip-text text-transparent">
               LearnGenix
