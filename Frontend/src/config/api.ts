@@ -10,6 +10,7 @@ export const ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     ME: '/auth/me',
+    RESEND_CONFIRMATION: '/auth/resend-confirmation',
   },
   EXERCISES: {
     LIST: '/exercises',

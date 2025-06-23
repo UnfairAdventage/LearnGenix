@@ -14,6 +14,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, role: 'student' | 'teacher') => Promise<void>;
+  resendConfirmation: (email: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -73,10 +74,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const register = async (name: string, email: string, password: string, role: 'student' | 'teacher') => {
     try {
       const response = await apiService.register({ name, email, password, role });
-      apiService.setToken(response.access_token);
+      // No establecer token automáticamente después del registro
+      // El usuario debe confirmar su email primero
       setUser(convertApiUserToUser(response.user));
     } catch (error) {
       console.error('Error en registro:', error);
+      throw error;
+    }
+  };
+
+  const resendConfirmation = async (email: string) => {
+    try {
+      await apiService.resendConfirmation(email);
+    } catch (error) {
+      console.error('Error al reenviar confirmación:', error);
       throw error;
     }
   };
@@ -92,6 +103,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading,
     login,
     register,
+    resendConfirmation,
     logout
   };
 

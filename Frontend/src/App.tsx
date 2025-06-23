@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import EmailConfirmation from './pages/EmailConfirmation';
 import Dashboard from './pages/Dashboard';
 import Areas from './pages/Areas';
 import Exercise from './pages/Exercise';
@@ -34,6 +35,7 @@ function App() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/email-confirmation" element={<EmailConfirmation />} />
             
             {/* Protected routes */}
             <Route path="/dashboard" element={

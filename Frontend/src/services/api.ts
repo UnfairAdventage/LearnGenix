@@ -8,6 +8,7 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   name: string;
+  password: string;
   role: 'student' | 'teacher';
 }
 
@@ -98,6 +99,13 @@ class ApiService {
     return this.request<AuthResponse>(ENDPOINTS.AUTH.REGISTER, {
       method: 'POST',
       body: JSON.stringify(userData),
+    });
+  }
+
+  async resendConfirmation(email: string): Promise<{ message: string; email: string }> {
+    return this.request<{ message: string; email: string }>(ENDPOINTS.AUTH.RESEND_CONFIRMATION, {
+      method: 'POST',
+      body: JSON.stringify({ email }),
     });
   }
 

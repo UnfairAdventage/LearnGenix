@@ -20,7 +20,12 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      // Manejar específicamente el error de email no confirmado
+      if (err.message.includes('no ha confirmado su email') || err.message.includes('email_confirmed_at')) {
+        setError('Tu email no ha sido confirmado. Por favor, revisa tu bandeja de entrada y confirma tu cuenta antes de iniciar sesión.');
+      } else {
+        setError(err.message || 'Error al iniciar sesión');
+      }
     } finally {
       setIsLoading(false);
     }

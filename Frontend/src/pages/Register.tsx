@@ -32,7 +32,9 @@ const Register: React.FC = () => {
 
     try {
       await register(name, email, password, role);
-      navigate('/dashboard');
+      navigate('/email-confirmation', { 
+        state: { email, message: 'Cuenta creada exitosamente. Por favor, confirma tu email para continuar.' }
+      });
     } catch (err: any) {
       setError(err.message || 'Error al crear la cuenta');
     } finally {
