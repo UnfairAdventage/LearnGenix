@@ -49,7 +49,7 @@ const AdminPanel: React.FC = () => {
             className="bg-gradient-to-r from-primary to-primary-neon hover:shadow-neon text-white py-3 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center space-x-2"
           >
             <Plus className="h-5 w-5" />
-            <span>Crear ejercicio</span>
+            <span >Crear ejercicio</span>
           </Link>
         </div>
 

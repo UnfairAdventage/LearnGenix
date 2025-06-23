@@ -18,6 +18,7 @@ export const ENDPOINTS = {
     GET: (id: string) => `/exercises/${id}`,
     UPDATE: (id: string) => `/exercises/${id}`,
     DELETE: (id: string) => `/exercises/${id}`,
+    NEXT: '/exercises/next',
   },
   PROGRESS: {
     GET: '/progress',

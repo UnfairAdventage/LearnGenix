@@ -129,6 +129,13 @@ class ApiService {
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
+
+  async getNextExercise(subject_id: string, difficulty: string = 'medium') {
+    return this.request<any>(ENDPOINTS.EXERCISES.NEXT, {
+      method: 'POST',
+      body: JSON.stringify({ subject_id, difficulty }),
+    });
+  }
 }
 
 export const apiService = new ApiService(); 
