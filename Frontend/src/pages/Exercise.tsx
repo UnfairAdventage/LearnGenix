@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { CheckCircle, XCircle, ArrowRight, Clock, Target, HelpCircle } from 'lucide-react';
+import { apiService } from '../services/api';
 
 interface ExerciseData {
   id: string;
@@ -20,58 +21,19 @@ const Exercise: React.FC = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeSpent, setTimeSpent] = useState(0);
-  const [startTime] = useState(Date.now());
+  const [startTime, setStartTime] = useState(Date.now());
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const subject = searchParams.get('subject');
+  const difficulty = 'medium'; // Puedes ajustar esto según la UI
 
-  // Mock exercises data
-  const exercises: ExerciseData[] = [
-    {
-      id: '1',
-      subject: 'mathematics',
-      question: '¿Cuál es el resultado de 2x + 5 = 13?',
-      type: 'text',
-      correctAnswer: '4',
-      explanation: 'Para resolver 2x + 5 = 13, restamos 5 de ambos lados: 2x = 8, luego dividimos por 2: x = 4',
-      difficulty: 'easy'
-    },
-    {
-      id: '2',
-      subject: 'physics',
-      question: 'Si un objeto cae en caída libre, ¿cuál es su aceleración en la Tierra?',
-      type: 'multiple-choice',
-      options: ['5 m/s²', '9.8 m/s²', '15 m/s²', '20 m/s²'],
-      correctAnswer: '9.8 m/s²',
-      explanation: 'La aceleración de la gravedad en la Tierra es aproximadamente 9.8 m/s²',
-      difficulty: 'medium'
-    },
-    {
-      id: '3',
-      subject: 'chemistry',
-      question: '¿Cuál es el símbolo químico del oro?',
-      type: 'text',
-      correctAnswer: 'Au',
-      explanation: 'El símbolo químico del oro es Au, que viene del latín "aurum"',
-      difficulty: 'easy'
-    }
-  ];
-
+  // Cargar ejercicio inicial desde backend
   useEffect(() => {
-    // Load exercise based on ID or subject
-    let exercise: ExerciseData;
-    if (id) {
-      exercise = exercises.find(ex => ex.id === id) || exercises[0];
-    } else if (subject) {
-      const subjectExercises = exercises.filter(ex => ex.subject === subject);
-      exercise = subjectExercises[Math.floor(Math.random() * subjectExercises.length)] || exercises[0];
-    } else {
-      exercise = exercises[Math.floor(Math.random() * exercises.length)];
-    }
-    
-    setCurrentExercise(exercise);
-  }, [id, subject]);
+    fetchNextExercise();
+    // eslint-disable-next-line
+  }, [subject]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -80,27 +42,43 @@ const Exercise: React.FC = () => {
     return () => clearInterval(interval);
   }, [startTime]);
 
+  const fetchNextExercise = async () => {
+    setLoading(true);
+    setShowFeedback(false);
+    setIsCorrect(false);
+    setUserAnswer('');
+    try {
+      // Llama al backend para obtener un ejercicio personalizado
+      const result = await apiService.getNextExercise(subject || '', difficulty);
+      // Adaptar el resultado del backend al formato local si es necesario
+      setCurrentExercise({
+        id: result.id,
+        subject: result.subject_id || '',
+        question: result.title || result.content || '',
+        type: result.type === 'multiple_choice' ? 'multiple-choice' : 'text',
+        options: result.options ? Object.values(result.options) : undefined,
+        correctAnswer: result.correct_answer || '',
+        explanation: result.explanation || '',
+        difficulty: result.difficulty || 'medium',
+      });
+      setStartTime(Date.now());
+      setTimeSpent(0);
+    } catch (error) {
+      setCurrentExercise(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (!currentExercise || !userAnswer.trim()) return;
-
     const correct = userAnswer.toLowerCase().trim() === currentExercise.correctAnswer.toLowerCase().trim();
     setIsCorrect(correct);
     setShowFeedback(true);
   };
 
   const handleNextExercise = () => {
-    // Reset state
-    setUserAnswer('');
-    setShowFeedback(false);
-    setIsCorrect(false);
-    
-    // Load new random exercise
-    const availableExercises = subject 
-      ? exercises.filter(ex => ex.subject === subject)
-      : exercises;
-    
-    const nextExercise = availableExercises[Math.floor(Math.random() * availableExercises.length)];
-    setCurrentExercise(nextExercise);
+    fetchNextExercise();
   };
 
   const formatTime = (seconds: number) => {
