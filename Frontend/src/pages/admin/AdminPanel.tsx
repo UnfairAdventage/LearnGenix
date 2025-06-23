@@ -176,21 +176,21 @@ const AdminPanel: React.FC = () => {
               <div className="space-y-3">
                 <Link
                   to="/admin/exercise/create"
-                  className="flex items-center space-x-3 p-3 rounded-xl hover:bg-primary/10 hover:text-primary-neon transition-all duration-300"
+                  className="flex items-center space-x-3 p-3 rounded-xl hover:bg-primary/10 hover:text-primary-neon transition-all duration-300 text-text-primary font-medium"
                 >
-                  <Plus className="h-5 w-5" />
+                  <Plus className="h-5 w-5 text-primary-neon" />
                   <span className="font-medium">Crear ejercicio</span>
                 </Link>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-secondary/10 hover:text-secondary transition-all duration-300">
-                  <Users className="h-5 w-5" />
+                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-secondary/10 hover:text-secondary transition-all duration-300 text-text-primary font-medium">
+                  <Users className="h-5 w-5 text-secondary" />
                   <span className="font-medium">Ver estudiantes</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-green-neon/10 hover:text-green-neon transition-all duration-300">
-                  <TrendingUp className="h-5 w-5" />
+                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-green-neon/10 hover:text-green-neon transition-all duration-300 text-text-primary font-medium">
+                  <TrendingUp className="h-5 w-5 text-green-neon" />
                   <span className="font-medium">Estadísticas detalladas</span>
                 </button>
-                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-pink-neon/10 hover:text-pink-neon transition-all duration-300">
-                  <FileText className="h-5 w-5" />
+                <button className="w-full flex items-center space-x-3 p-3 rounded-xl hover:bg-pink-neon/10 hover:text-pink-neon transition-all duration-300 text-text-primary font-medium">
+                  <FileText className="h-5 w-5 text-pink-neon" />
                   <span className="font-medium">Generar reporte</span>
                 </button>
               </div>
