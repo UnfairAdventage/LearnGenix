@@ -83,7 +83,7 @@ Una vez que el servidor esté corriendo, puedes acceder a:
 
 ## 🔐 Endpoints de Autenticación
 
-### Registro
+### Registro (requiere confirmación de email)
 ```
 POST /api/v1/auth/register
 Content-Type: application/json
@@ -91,9 +91,11 @@ Content-Type: application/json
 {
   "email": "usuario@ejemplo.com",
   "name": "Nombre Usuario",
+  "password": "contraseña123",
   "role": "student"
 }
 ```
+- **Nota:** Tras el registro, se envía automáticamente un email de confirmación. El usuario debe confirmar su email antes de poder iniciar sesión.
 
 ### Login
 ```
@@ -102,11 +104,38 @@ Content-Type: application/x-www-form-urlencoded
 
 username=usuario@ejemplo.com&password=contraseña123
 ```
+- **Error común:** Si el email no está confirmado, el login fallará con un error 401.
 
 ### Obtener usuario actual
 ```
 GET /api/v1/auth/me
 Authorization: Bearer <token>
+```
+
+### Reenviar email de confirmación
+```
+POST /api/v1/auth/resend-confirmation
+Content-Type: application/json
+
+{
+  "email": "usuario@ejemplo.com"
+}
+```
+- **Uso:** Si el usuario no recibió el email de confirmación, puede solicitar el reenvío.
+
+#### Ejemplo de respuesta exitosa
+```
+{
+  "message": "Email de confirmación reenviado correctamente",
+  "email": "usuario@ejemplo.com"
+}
+```
+
+#### Ejemplo de error
+```
+{
+  "detail": "Usuario no encontrado"
+}
 ```
 
 ## 👥 Usuarios de Prueba
@@ -116,6 +145,8 @@ El script `init_db.py` crea los siguientes usuarios:
 - **Estudiante**: student@test.com / password
 - **Profesor**: teacher@test.com / password  
 - **Admin**: admin@test.com / password
+
+> **Nota:** Si los usuarios de prueba requieren confirmación de email, revisa la bandeja de entrada o spam del correo correspondiente.
 
 ## 🧪 Scripts de Prueba
 
@@ -163,29 +194,38 @@ El backend asume que ya tienes configuradas las políticas de seguridad en Supab
 - Autenticación de usuarios
 - Gestión de sesiones
 
+### Configuración de SMTP para emails de confirmación
+
+- **IMPORTANTE:** Para que los emails de confirmación lleguen a los usuarios, debes configurar correctamente el SMTP en el panel de Supabase (Authentication > Settings > Email).
+- Si usas Mailtrap u otro servicio de testing, revisa la bandeja de entrada correspondiente.
+- Si los emails no llegan, revisa la carpeta de spam y los logs de Supabase.
+
 ## 🚨 Notas Importantes
 
 - El backend usa la **service key** para operaciones administrativas como crear usuarios
 - La autenticación se maneja a través de Supabase Auth
 - Los tokens JWT se generan localmente para compatibilidad con el frontend
 - Asegúrate de que las políticas de Supabase permitan las operaciones necesarias
+- **El email de confirmación se envía automáticamente al registrar un usuario.**
+- Si el usuario no recibe el email, puede usar el endpoint de reenvío.
 
-## 🔧 Solución de Problemas
+## 🛠️ Troubleshooting: Emails de confirmación
 
-### Error de configuración
-Si ves errores de Pydantic, ejecuta:
-```bash
-python test_config.py
-```
+- **No recibo el email de confirmación:**
+  - Verifica la configuración SMTP en Supabase.
+  - Revisa la carpeta de spam.
+  - Prueba con un correo real (Gmail, Outlook, etc.).
+  - Revisa los logs de Supabase para errores de envío.
+  - Usa el endpoint `/api/v1/auth/resend-confirmation` para reenviar el email.
 
-### Error de conexión con Supabase
-Si hay problemas de conexión, ejecuta:
-```bash
-python test_supabase.py
-```
+- **El login falla aunque el usuario existe:**
+  - Asegúrate de que el email esté confirmado.
+  - Si el usuario es de prueba, revisa si requiere confirmación de email.
 
-### Error de dependencias
-Si hay errores de importación:
-```bash
-pip install -r requirements.txt
-``` 
+## 📚 Flujo de usuario (registro y confirmación)
+
+1. El usuario se registra con su email y contraseña.
+2. El sistema envía automáticamente un email de confirmación.
+3. El usuario debe hacer clic en el enlace recibido para activar su cuenta.
+4. Solo después de confirmar el email podrá iniciar sesión.
+5. Si no recibe el email, puede solicitar el reenvío desde el frontend o usando el endpoint correspondiente. 
