@@ -19,6 +19,7 @@ export const ENDPOINTS = {
     UPDATE: (id: string) => `/exercises/${id}`,
     DELETE: (id: string) => `/exercises/${id}`,
     NEXT: '/exercises/next',
+    SUBMIT: '/exercises/submit',
   },
   PROGRESS: {
     GET: '/progress',

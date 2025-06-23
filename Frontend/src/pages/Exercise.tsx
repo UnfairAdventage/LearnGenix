@@ -76,11 +76,22 @@ const Exercise: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!currentExercise || !userAnswer.trim()) return;
-    const correct = userAnswer.toLowerCase().trim() === currentExercise.correctAnswer.toLowerCase().trim();
-    setIsCorrect(correct);
-    setShowFeedback(true);
+    setLoading(true);
+    try {
+      const res = await apiService.submitExercise({
+        exercise_id: currentExercise.id,
+        answer: userAnswer,
+        time_spent: timeSpent,
+      });
+      setIsCorrect(res.is_correct);
+      setShowFeedback(true);
+    } catch (error: any) {
+      alert(error.message || 'Error al enviar la respuesta');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleNextExercise = () => {

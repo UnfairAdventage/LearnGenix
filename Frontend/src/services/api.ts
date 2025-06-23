@@ -130,29 +130,36 @@ class ApiService {
     return !!this.getToken();
   }
 
-  async getNextExercise(subject_id: string, difficulty: string = 'medium') {
+  async getNextExercise(subject_id: string, difficulty: string = 'medium'): Promise<any> {
     return this.request<any>(ENDPOINTS.EXERCISES.NEXT, {
       method: 'POST',
       body: JSON.stringify({ subject_id, difficulty }),
     });
   }
 
-  async getDashboardSummary() {
+  async getDashboardSummary(): Promise<any> {
     return this.request<any>('/dashboard/summary', {
       method: 'GET',
     });
   }
  
-  async getSubjects() {
+  async getSubjects(): Promise<any[]> {
     return this.request<any[]>('/dashboard/subjects', { method: 'GET' });
   }
 
-  async getTopics() {
+  async getTopics(): Promise<any[]> {
     return this.request<any[]>('/dashboard/topics', { method: 'GET' });
   }
 
-  async getAchievements() {
+  async getAchievements(): Promise<any[]> {
     return this.request<any[]>('/dashboard/achievements', { method: 'GET' });
+  }
+
+  async submitExercise({ exercise_id, answer, time_spent }: { exercise_id: string, answer: string, time_spent?: number }): Promise<{ success: boolean; is_correct: boolean; score: number }> {
+    return this.request<{ success: boolean; is_correct: boolean; score: number }>(ENDPOINTS.EXERCISES.SUBMIT, {
+      method: 'POST',
+      body: JSON.stringify({ exercise_id, answer, time_spent }),
+    });
   }
 }
 
