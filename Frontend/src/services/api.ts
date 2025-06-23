@@ -142,6 +142,18 @@ class ApiService {
       method: 'GET',
     });
   }
+ 
+  async getSubjects() {
+    return this.request<any[]>('/dashboard/subjects', { method: 'GET' });
+  }
+
+  async getTopics() {
+    return this.request<any[]>('/dashboard/topics', { method: 'GET' });
+  }
+
+  async getAchievements() {
+    return this.request<any[]>('/dashboard/achievements', { method: 'GET' });
+  }
 }
 
 export const apiService = new ApiService(); 

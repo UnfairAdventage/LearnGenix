@@ -38,6 +38,41 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user))
     else:
         summary["stats"] = {}
 
+    # Progreso por materia
+    # 1. Obtener todas las materias
+    subjects_resp = supabase.table('subjects').select('id,name').execute()
+    subjects = subjects_resp.data if subjects_resp and subjects_resp.data else []
+    # 2. Para cada materia, contar ejercicios totales y completados
+    progress_by_subject = {}
+    for subject in subjects:
+        subject_id = subject['id']
+        # Total ejercicios en la materia
+        total_resp = supabase.table('exercises').select('id').eq('subject_id', subject_id).execute()
+        total = len(total_resp.data) if total_resp and total_resp.data else 0
+        # Completados por el usuario
+        completed_resp = supabase.table('user_progress').select('exercise_id').eq('user_id', user_id).execute()
+        completed_ids = set([row['exercise_id'] for row in completed_resp.data]) if completed_resp.data else set()
+        completed_count = 0
+        if total_resp.data:
+            completed_count = sum(1 for row in total_resp.data if row['id'] in completed_ids)
+        progress_by_subject[subject_id] = {
+            'name': subject['name'],
+            'completed': completed_count,
+            'total': total,
+            'percent': int((completed_count / total) * 100) if total else 0
+        }
+
+    # Progreso general (puedes calcularlo aquí o en el frontend)
+    if summary["stats"]:
+        total = summary["stats"].get("total_exercises", 0)
+        completed = summary["stats"].get("completed_exercises", 0)
+        summary["progress"] = {
+            "general": int((completed / total) * 100) if total else 0,
+            "by_subject": progress_by_subject
+        }
+    else:
+        summary["progress"] = {"general": 0, "by_subject": progress_by_subject}
+
     # Logros recientes
     achievements_resp = supabase.table('user_achievements').select('*,achievement_id(*,name,description,icon)').eq('user_id', user_id).order('unlocked_at', desc=True).limit(5).execute()
     if achievements_resp and achievements_resp.data:
@@ -65,17 +100,6 @@ def get_dashboard_summary(current_user: User = Depends(get_current_active_user))
             }
             for a in activity_resp.data
         ]
-
-    # Progreso general (puedes calcularlo aquí o en el frontend)
-    if summary["stats"]:
-        total = summary["stats"].get("total_exercises", 0)
-        completed = summary["stats"].get("completed_exercises", 0)
-        summary["progress"] = {
-            "general": int((completed / total) * 100) if total else 0,
-            "by_subject": {
-                # Aquí podrías agregar lógica para progreso por materia
-            }
-        }
 
     # Si es profesor, puedes agregar más datos (ejercicios creados, estudiantes activos, etc.)
     if role == 'teacher':

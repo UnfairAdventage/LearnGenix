@@ -8,6 +8,7 @@ from app.crud.exercise import (
 from app.api.deps import get_current_active_user
 from app.schemas.user import User
 import random
+from app.core.supabase import get_supabase
 
 router = APIRouter()
 
@@ -60,22 +61,28 @@ def get_next_exercise(
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Devuelve un ejercicio personalizado para el alumno (stub inicial, sin IA real).
+    Devuelve un ejercicio personalizado para el alumno, sin repetir ejercicios ya completados.
     """
-    # Normaliza subject_id: si es string vacío o no es UUID válido, lo trata como None
+    # Normaliza subject_id
     if isinstance(subject_id, str):
         try:
             subject_id = UUID(subject_id) if subject_id else None
         except Exception:
             subject_id = None
-    # Aquí se podría integrar IA. Por ahora, selecciona un ejercicio aleatorio del subject y dificultad.
+
+    supabase = get_supabase()
+    # Obtener IDs de ejercicios ya completados por el usuario
+    completados_resp = supabase.table('user_progress').select('exercise_id').eq('user_id', str(current_user.id)).execute()
+    completados = set([row['exercise_id'] for row in completados_resp.data]) if completados_resp.data else set()
+
+    # Obtener ejercicios disponibles
     ejercicios = get_exercises(subject_id=subject_id)
-    
-    # Filtrar adicionalmente por dificultad si se especifica
+    # Filtrar por dificultad
     if difficulty:
         ejercicios = [e for e in ejercicios if e.difficulty == difficulty]
+    # Filtrar los ya completados
+    ejercicios = [e for e in ejercicios if str(e.id) not in completados]
 
     if not ejercicios:
-        raise HTTPException(status_code=404, detail="No hay ejercicios disponibles para los criterios dados")
-    
+        raise HTTPException(status_code=404, detail="No hay ejercicios disponibles para los criterios dados o ya completaste todos")
     return random.choice(ejercicios) 
